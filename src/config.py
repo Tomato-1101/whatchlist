@@ -11,13 +11,8 @@ KABUTAN_URLS = {
 
 # ストックウェザー
 STOCKWEATHER_URLS = {
-    "up_from_open": "https://finance.stockweather.co.jp/contents/ranking.aspx?mkt=7&cat=0000&type=2",  # 寄付からの値上がり率
-    "down_from_open": "https://finance.stockweather.co.jp/contents/ranking.aspx?mkt=7&cat=0000&type=3",  # 寄付からの値下がり率
-}
-
-# デイトレードマップ
-KABUMAP_URLS = {
-    "volatility": "https://dt.kabumap.com/servlets/dt/Action?SRC=change%2Fbase",  # 日中値動き変動率
+    "up_from_open": "https://finance.stockweather.co.jp/contents/ranking.aspx?type=2&mkt=0&cat=0000",  # 寄付からの値上がり率
+    "down_from_open": "https://finance.stockweather.co.jp/contents/ranking.aspx?type=3&mkt=0&cat=0000",  # 寄付からの値下がり率
 }
 
 # 松井証券

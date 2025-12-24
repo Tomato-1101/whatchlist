@@ -58,11 +58,12 @@ class MatsuiScraper(BaseScraper):
                 if len(cells) >= 2:
                     # 2列目（銘柄名・コード列）から抽出
                     text = cells[1].get_text(strip=True)
-                    # 4桁の数字を探す（ただし485Aのような英字付きは除外）
-                    match = re.search(r"(\d{4})(?!\w)", text)
+                    # 4桁の数字、または3-4桁の数字+1文字のアルファベット（例: 285A）を抽出
+                    match = re.search(r"(\d{3,4}[A-Z]?)(?:\s|東)", text)
                     if match:
                         code = match.group(1)
-                        if code not in codes:
+                        # 3桁以下は除外（正規のコードは4桁以上）
+                        if len(code) >= 4 and code not in codes:
                             codes.append(code)
 
         return codes

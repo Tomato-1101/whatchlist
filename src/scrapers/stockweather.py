@@ -25,10 +25,12 @@ class StockWeatherScraper(BaseScraper):
 
         # ランキングテーブルから銘柄コードを抽出
         # stockdetail.aspx?cntcode=JP&skubun=1&stkcode=[銘柄コード] の形式
-        links = soup.find_all("a", href=re.compile(r"stockdetail\.aspx.*stkcode=\d{4}"))
+        # 銘柄コードは4桁の数字、または3-4桁の数字+1文字のアルファベット（例: 485A）
+        links = soup.find_all("a", href=re.compile(r"stockdetail\.aspx.*stkcode="))
 
         for link in links:
-            match = re.search(r"stkcode=(\d{4})", link["href"])
+            # 4桁の数字、または3-4桁の数字+1文字のアルファベットを抽出
+            match = re.search(r"stkcode=(\d{3,4}[A-Z]?)", link["href"])
             if match:
                 code = match.group(1)
                 if code not in codes:  # 重複を除外

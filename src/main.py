@@ -1,7 +1,6 @@
 import click
 from .scrapers.kabutan import KabutanScraper
 from .scrapers.stockweather import StockWeatherScraper
-from .scrapers.kabumap import KabumapScraper
 from .scrapers.matsui import MatsuiScraper
 from .exporters.tradingview import TradingViewExporter
 
@@ -17,8 +16,6 @@ SCRAPER_MAP = {
     # ストックウェザー
     "up_from_open": ("stockweather", StockWeatherScraper),
     "down_from_open": ("stockweather", StockWeatherScraper),
-    # デイトレードマップ
-    "volatility": ("kabumap", KabumapScraper),
     # 松井証券
     "tick": ("matsui", MatsuiScraper),
 }
@@ -32,7 +29,6 @@ RANKING_NAMES = {
     "active": "活況銘柄",
     "up_from_open": "寄付からの値上がり率",
     "down_from_open": "寄付からの値下がり率",
-    "volatility": "日中値動き変動率",
     "tick": "ティック回数",
 }
 
@@ -114,13 +110,8 @@ def interactive_mode():
     for r in rankings_to_fetch:
         click.echo(f"  - {RANKING_NAMES[r]}")
 
-    # 取得件数を入力
+    # 取得件数を入力（Enterでデフォルト50件）
     count = click.prompt("\n取得する銘柄数を入力してください", type=int, default=50)
-
-    # 確認
-    if not click.confirm(f"\n{len(rankings_to_fetch)}種類のランキングを上位{count}件ずつ取得します。よろしいですか？", default=True):
-        click.echo("キャンセルしました")
-        return
 
     # エクスポーター初期化
     exporter = TradingViewExporter(output_dir="output")

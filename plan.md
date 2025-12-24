@@ -12,9 +12,8 @@
 | 出来高上位 | カブタン | `https://kabutan.jp/warning/volume_ranking` |
 | 売買代金上位 | カブタン | `https://kabutan.jp/warning/trading_value_ranking` |
 | 活況銘柄 | カブタン | `https://kabutan.jp/warning/?mode=2_9` |
-| 寄付からの値上がり率 | ストックウェザー | `https://finance.stockweather.co.jp/contents/ranking.aspx?mkt=7&cat=0000&type=2` |
-| 寄付からの値下がり率 | ストックウェザー | `https://finance.stockweather.co.jp/contents/ranking.aspx?mkt=7&cat=0000&type=3` |
-| 日中値動き変動率 | デイトレードマップ | `https://dt.kabumap.com/servlets/dt/Action?SRC=change%2Fbase` |
+| 寄付からの値上がり率 | ストックウェザー | `https://finance.stockweather.co.jp/contents/ranking.aspx?type=2&mkt=0&cat=0000` |
+| 寄付からの値下がり率 | ストックウェザー | `https://finance.stockweather.co.jp/contents/ranking.aspx?type=3&mkt=0&cat=0000` |
 | ティック回数 | 松井証券 | `https://finance.matsui.co.jp/ranking-tick/index`（要ヘッドレスブラウザ） |
 
 ## 技術スタック
@@ -38,7 +37,6 @@ D:\project\whatchlist\
 │   │   ├── base.py          # 抽象基底クラス
 │   │   ├── kabutan.py       # カブタンスクレイパー（値上がり/値下がり/出来高/売買代金/活況銘柄）
 │   │   ├── stockweather.py  # ストックウェザースクレイパー（寄付からの値上がり/値下がり）
-│   │   ├── kabumap.py       # デイトレードマップスクレイパー（日中値動き変動率）
 │   │   └── matsui.py        # 松井証券スクレイパー（ティック回数、Playwright使用）
 │   ├── exporters/
 │   │   ├── __init__.py
@@ -72,22 +70,17 @@ D:\project\whatchlist\
 - 寄付からの値上がり率/値下がり率に対応
 - requests + BeautifulSoupで実装
 
-### Step 5: デイトレードマップスクレイパー
-- `src/scrapers/kabumap.py`
-- 日中値動き変動率に対応
-- requests + BeautifulSoupで実装
-
-### Step 6: 松井証券スクレイパー
+### Step 5: 松井証券スクレイパー
 - `src/scrapers/matsui.py`
 - ティック回数に対応
 - Playwrightで実装（403対策）
 
-### Step 7: TradingViewエクスポーター
+### Step 6: TradingViewエクスポーター
 - `src/exporters/tradingview.py`
 - 銘柄コードリスト → `TSE:XXXX,TSE:YYYY,...` 形式
 - `output/watchlist_[ランキング種類]_[日付].txt` に保存
 
-### Step 8: CLIインターフェース
+### Step 7: CLIインターフェース
 - `src/main.py`
 - clickライブラリで実装
 - ランキング種類を複数選択可能
