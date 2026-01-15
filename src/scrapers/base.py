@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import time
 
 
@@ -41,7 +41,7 @@ class BaseScraper(ABC):
         """
         pass
 
-    def get_ranking(self, ranking_type: str) -> List[str]:
+    def get_ranking(self, ranking_type: str) -> Tuple[List[str], Optional[str]]:
         """
         ランキングを取得するメインメソッド
 
@@ -49,7 +49,7 @@ class BaseScraper(ABC):
             ranking_type: ランキング種類
 
         Returns:
-            銘柄コードのリスト
+            タプル（銘柄コードのリスト, サイトの更新日）
         """
         url = self.get_url(ranking_type)
         if not url:
@@ -60,9 +60,22 @@ class BaseScraper(ABC):
 
         html = self.fetch(url)
         codes = self.parse(html)
+        update_date = self.parse_update_date(html)
 
         # 指定件数まで絞る
-        return codes[:self.count]
+        return codes[:self.count], update_date
+
+    def parse_update_date(self, html: str) -> Optional[str]:
+        """
+        HTMLから更新日を抽出（サブクラスでオーバーライド可能）
+
+        Args:
+            html: HTMLコンテンツ
+
+        Returns:
+            更新日（YYYYMMDD形式）、取得できない場合はNone
+        """
+        return None
 
     @abstractmethod
     def get_url(self, ranking_type: str) -> Optional[str]:

@@ -1,7 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import re
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .base import BaseScraper
@@ -42,7 +43,7 @@ class KabutanScraper(BaseScraper):
 
         return codes
 
-    def get_ranking(self, ranking_type: str, count: int = 50) -> List[str]:
+    def get_ranking(self, ranking_type: str, count: int = 50) -> Tuple[List[str], Optional[str]]:
         """ランキングを取得（オーバーライド：並列ページ取得）"""
         url = self.get_url(ranking_type)
         if not url:
@@ -52,6 +53,7 @@ class KabutanScraper(BaseScraper):
 
         # 最大4ページを並列取得して50件以上確保
         pages_to_fetch = 4
+        first_page_html = None  # 更新日取得用
 
         def fetch_and_parse_page(page_num):
             if page_num == 1:
@@ -65,15 +67,17 @@ class KabutanScraper(BaseScraper):
 
             response = requests.get(page_url, headers=headers, timeout=30)
             response.raise_for_status()
-            return page_num, self.parse(response.text)
+            return page_num, response.text, self.parse(response.text)
 
         # 並列でページを取得・解析し、ページ番号と結果を保持
         page_results = {}
         with ThreadPoolExecutor(max_workers=4) as executor:
             future_to_page = {executor.submit(fetch_and_parse_page, i): i for i in range(1, pages_to_fetch + 1)}
             for future in as_completed(future_to_page):
-                page_num, codes = future.result()
+                page_num, html, codes = future.result()
                 page_results[page_num] = codes
+                if page_num == 1:
+                    first_page_html = html
 
         # ページ番号順に並べてコードを結合
         all_codes = []
@@ -88,7 +92,33 @@ class KabutanScraper(BaseScraper):
                 seen.add(code)
                 unique_codes.append(code)
 
-        return unique_codes[:count]
+        # 更新日を取得
+        update_date = self.parse_update_date(first_page_html) if first_page_html else None
+
+        return unique_codes[:count], update_date
+
+    def parse_update_date(self, html: str) -> Optional[str]:
+        """HTMLから更新日を抽出（<time datetime="...">から取得）"""
+        if not html:
+            return None
+        
+        soup = BeautifulSoup(html, "lxml")
+        time_tag = soup.find("time")
+        
+        if time_tag and time_tag.get("datetime"):
+            # datetime属性は "2026-01-09T15:30+09:00" のような形式
+            datetime_str = time_tag["datetime"]
+            try:
+                # ISO形式から日付部分を抽出
+                dt = datetime.fromisoformat(datetime_str.replace("+09:00", "+09:00"))
+                return dt.strftime("%Y%m%d")
+            except ValueError:
+                # フォールバック: 日付部分だけ抽出を試みる
+                match = re.search(r"(\d{4})-(\d{2})-(\d{2})", datetime_str)
+                if match:
+                    return f"{match.group(1)}{match.group(2)}{match.group(3)}"
+        
+        return None
 
     def get_url(self, ranking_type: str) -> Optional[str]:
         """ランキング種類に対応するURLを取得"""

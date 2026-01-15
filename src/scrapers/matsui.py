@@ -1,6 +1,6 @@
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import re
 
 from .base import BaseScraper

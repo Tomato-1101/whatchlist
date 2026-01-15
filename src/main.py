@@ -121,6 +121,9 @@ def interactive_mode():
     click.echo("  取得開始")
     click.echo("=" * 60)
 
+    # 共有の更新日（最初に取得した日付を他のランキングでも使用）
+    shared_update_date = None
+
     for ranking_type in rankings_to_fetch:
         try:
             click.echo(f"\n[{RANKING_NAMES[ranking_type]}] 取得中...")
@@ -129,17 +132,26 @@ def interactive_mode():
             source, scraper_class = SCRAPER_MAP[ranking_type]
             scraper = scraper_class(count=count)
 
-            # ランキング取得
-            codes = scraper.get_ranking(ranking_type)
+            # ランキング取得（コードと更新日を取得）
+            codes, update_date = scraper.get_ranking(ranking_type)
 
             if not codes:
                 click.echo(f"  → 銘柄が取得できませんでした")
                 continue
 
             click.echo(f"  → {len(codes)}件の銘柄を取得しました")
+            
+            # 更新日を共有（最初に取得した日付を保持）
+            if update_date and not shared_update_date:
+                shared_update_date = update_date
+            
+            # 使用する日付（個別の更新日がなければ共有日付を使用）
+            date_to_use = update_date or shared_update_date
+            if date_to_use:
+                click.echo(f"  → データ更新日: {date_to_use[:4]}/{date_to_use[4:6]}/{date_to_use[6:]}")
 
-            # TradingView形式で出力
-            filepath = exporter.export(codes, ranking_type)
+            # TradingView形式で出力（サイトの更新日を使用）
+            filepath = exporter.export(codes, ranking_type, date_to_use)
             click.echo(f"  → 出力: {filepath}")
 
         except Exception as e:
@@ -204,6 +216,9 @@ def main(ranking, count, all, output, interactive):
     # エクスポーター初期化
     exporter = TradingViewExporter(output_dir=output)
 
+    # 共有の更新日（最初に取得した日付を他のランキングでも使用）
+    shared_update_date = None
+
     # 各ランキングを取得
     for ranking_type in rankings_to_fetch:
         try:
@@ -213,17 +228,26 @@ def main(ranking, count, all, output, interactive):
             source, scraper_class = SCRAPER_MAP[ranking_type]
             scraper = scraper_class(count=count)
 
-            # ランキング取得
-            codes = scraper.get_ranking(ranking_type)
+            # ランキング取得（コードと更新日を取得）
+            codes, update_date = scraper.get_ranking(ranking_type)
 
             if not codes:
                 click.echo(f"[{ranking_type}] 銘柄が取得できませんでした")
                 continue
 
             click.echo(f"[{ranking_type}] {len(codes)}件の銘柄を取得しました")
+            
+            # 更新日を共有（最初に取得した日付を保持）
+            if update_date and not shared_update_date:
+                shared_update_date = update_date
+            
+            # 使用する日付（個別の更新日がなければ共有日付を使用）
+            date_to_use = update_date or shared_update_date
+            if date_to_use:
+                click.echo(f"[{ranking_type}] データ更新日: {date_to_use[:4]}/{date_to_use[4:6]}/{date_to_use[6:]}")
 
-            # TradingView形式で出力
-            filepath = exporter.export(codes, ranking_type)
+            # TradingView形式で出力（サイトの更新日を使用）
+            filepath = exporter.export(codes, ranking_type, date_to_use)
             click.echo(f"[{ranking_type}] 出力: {filepath}")
 
         except Exception as e:

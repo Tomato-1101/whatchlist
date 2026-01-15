@@ -27,13 +27,14 @@ class TradingViewExporter:
         self.output_dir = output_dir
         os.makedirs(output_dir, exist_ok=True)
 
-    def export(self, codes: List[str], ranking_type: str) -> str:
+    def export(self, codes: List[str], ranking_type: str, update_date: str = None) -> str:
         """
         銘柄コードリストをTradingView形式で出力
 
         Args:
             codes: 銘柄コードのリスト（例: ['7203', '6758', ...]）
             ranking_type: ランキング種類（ファイル名に使用）
+            update_date: サイトの更新日（YYYYMMDD形式、Noneの場合は現在日付を使用）
 
         Returns:
             出力ファイルパス
@@ -43,7 +44,8 @@ class TradingViewExporter:
         watchlist = ",".join(tse_codes)
 
         # ファイル名生成: [日本語ランキング名]_[日付].txt
-        date_str = datetime.now().strftime("%Y%m%d")
+        # 更新日が指定されていない場合は現在日付を使用
+        date_str = update_date if update_date else datetime.now().strftime("%Y%m%d")
         japanese_name = RANKING_FILENAMES.get(ranking_type, ranking_type)
         filename = f"{japanese_name}_{date_str}.txt"
         filepath = os.path.join(self.output_dir, filename)
